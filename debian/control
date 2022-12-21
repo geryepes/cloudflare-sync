@@ -1,0 +1,21 @@
+Source: python3-cloudflare-sync
+Section: python
+Priority: optional
+Maintainer: German Yepes <geryepes@gmail.com>
+Build-Depends: debhelper (>= 11),
+ dh-python,
+ python3-all,
+ python3-setuptools 
+Standards-Version: 4.0.0
+
+Package: python3-cloudflare-sync
+Architecture: amd64
+Depends: ${python3:Depends}, ${shlibs:Depends}, ${misc:Depends},
+ python3-cloudflare
+Recommends:
+Breaks: cloudflare-sync
+Replaces: cloudflare-sync
+Conflicts: cloudflare-sync
+Provides: cloudflare-sync
+Description: DNS zone Cloudflare Sync
+Tag: cloudflare

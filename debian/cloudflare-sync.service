@@ -1,0 +1,14 @@
+[Unit]
+Description=DNS records sync with cloudflare
+Requires=networking.service
+After=multi-user.target
+
+[Service]
+User=root
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/cf_sync
+Restart=always
+
+
+[Install]
+WantedBy=multi-user.target
