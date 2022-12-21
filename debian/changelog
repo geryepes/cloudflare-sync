@@ -1,0 +1,5 @@
+python3-cloudflare-sync (1:20211215-1) bullseye; urgency=medium
+
+  * Initial release.
+
+ -- geryepes <geryepes@gmail.com>  Wed, 15 Dec 2021 12:19:20 -0300

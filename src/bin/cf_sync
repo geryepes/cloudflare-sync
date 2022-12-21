@@ -1,0 +1,54 @@
+#!/bin/python3
+
+import configparser
+import logging
+from time import sleep
+from urllib.error import URLError
+
+from CloudFlare.exceptions import CloudFlareAPIError
+from cloudflare_sync import (DnsRecord, DnsRecordManager, get_cf_client,
+                             get_external_ip)
+
+logging.basicConfig(
+    handlers=[logging.StreamHandler()],
+    level=logging.INFO,
+    format='%(levelname)s - %(name)s - %(message)s',
+)
+
+logger = logging.getLogger(__name__)
+
+if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('/etc/cloudflare-sync/config.ini')
+    
+    logger.info('Sections read from config file: %s', config.sections())
+    
+    SYNC_INTERVAL_SECONDS = config.getint('DEFAULT', 'SyncIntervalSeconds', fallback=300)
+    CLOUDFLARE_EMAIL = config.get('DEFAULT', 'email')
+    CLOUDFLARE_TOKEN = config.get('DEFAULT', 'token')
+    
+    logger.info('Sync interval seconds configured: %s', SYNC_INTERVAL_SECONDS)
+    
+    records = []
+    for section in config.sections():
+        records.append(DnsRecord(
+            name=section,
+            type=config.get(section, 'type'),
+            proxied=config.getboolean(section, 'proxied', fallback=False),
+            zone_name=config.get(section, 'zone_name')
+        ))
+
+    cf = get_cf_client(email=CLOUDFLARE_EMAIL, token=CLOUDFLARE_TOKEN)
+    
+    while True:
+        try:
+            external_ip = get_external_ip()
+            for record in records:
+                record_manager = DnsRecordManager(cf, record, external_ip)
+                if record_manager.should_update():
+                    record_manager.update()
+        except URLError:
+            logger.warning('Could not get external IP')
+        except CloudFlareAPIError:
+            logger.error('Error trying to contact Cloudflare API')
+        sleep(SYNC_INTERVAL_SECONDS)
